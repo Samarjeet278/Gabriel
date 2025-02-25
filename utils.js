@@ -27,8 +27,8 @@ export const convert = (sec) => {
   }
 };
 
-// Convert (Sec Into H/M/S)
-export const updateSec = (sec) => {
+// Convert (Sec Into H-M-S)
+export const updateSec = () => {
   try {
     if (isNaN(sec) || sec < 0) return "0";
     if (sec >= 3600) {
@@ -45,9 +45,9 @@ export const updateSec = (sec) => {
   }
 };
 
-let file = null;
+let file = null; // Default
 
-const forAudio = new Audio();
+const forAudio = new Audio(); // Default
 const audioPath = localStorage.getItem("audio-path");
 const titles = JSON.parse(localStorage.getItem("titles"));
 
@@ -67,11 +67,11 @@ const forPlayBtns = document.querySelectorAll("[aria-label='play-pause']");
 // Audio-File Play
 export const audioInit = async (audio, path) => {
   try {
-    if (!audio && !path) return;
+    if (!audio && !path) return; // Default
 
     file = audio; // Update
 
-    const source = path + "/" + audio + ".mp3";
+    const source = audioPath + audio + ".mp3";
 
     if (forAudio.src !== source) {
       forAudio.src = source;
@@ -79,9 +79,9 @@ export const audioInit = async (audio, path) => {
       forAudio.load(); // Load
     }
 
-    await forAudio.play().catch(console.log);
+    await forAudio.play(); // Play
 
-    // Update Play-Pause Button
+    // Button Update (Play-Pause)
     forPlayBtns.forEach((button) => {
       button.firstElementChild.classList.add("hidden");
       button.lastElementChild.classList.remove("hidden");
@@ -115,7 +115,6 @@ export const audioInit = async (audio, path) => {
       tag.firstElementChild.setAttribute("src", metadata.picture);
 
       const frag = document.createDocumentFragment();
-      const template = tag.lastElementChild;
 
       lyrics.forEach((text) => {
         const li = document.createElement("li");
@@ -123,8 +122,8 @@ export const audioInit = async (audio, path) => {
         frag.appendChild(li);
       });
 
-      template.innerHTML = "";
-      template.appendChild(frag); // Update Lyrics
+      tag.lastElementChild.innerHTML = "";
+      tag.lastElementChild.appendChild(frag); // Update Lyrics
     });
   } catch (error) {
     console.log(error);
@@ -132,150 +131,158 @@ export const audioInit = async (audio, path) => {
 };
 
 try {
-  // Button Update (Play-Pause)
-  forAudio.addEventListener("ended", () => {
-    forPlayBtns.forEach((button) => {
-      button.lastElementChild.classList.add("hidden");
-      button.firstElementChild.classList.remove("hidden");
-    });
-  });
-
-  // Progress Functionality (Status)
-  forAudio.addEventListener("timeupdate", () => {
-    const percent = (forAudio.currentTime / forAudio.duration) * 100;
-    forProgBox.forEach((tag) => {
-      tag.firstElementChild.textContent = convert(forAudio.currentTime);
-      tag.lastElementChild.textContent = convert(forAudio.duration);
-    });
-
-    forProgress.forEach((tag) => {
-      tag.firstElementChild.style.left = percent + "%";
-      tag.lastElementChild.style.width = percent + "%";
-    });
-  });
-
-  // Progress Functionality (Click)
-  forProgress.forEach((tag) => {
-    tag.addEventListener("click", (event) => {
-      if (!forAudio.src) return;
-      // Calculate Position
-      const range = event.currentTarget.getBoundingClientRect();
-      const click = event.clientX - range.left;
-      const percent = Math.min(100, Math.max(0, (click / range.width) * 100)); // Ensure 0 - 100 Range
-
-      forAudio.currentTime = (percent / 100) * forAudio.duration;
-
-      // Update Progress UI
-      tag.firstElementChild.style.left = percent + "%";
-      tag.lastElementChild.style.width = percent + "%";
-    });
-  });
-
-  // Button Functionality (Play-Pause)
-  forPlayBtns.forEach((button) => {
-    button.addEventListener("click", () => {
-      if (!forAudio.src) return;
-      else if (forAudio.paused) {
-        forAudio.play();
-        button.firstElementChild.classList.add("hidden");
-        button.lastElementChild.classList.remove("hidden");
-      } else {
-        forAudio.pause();
+  if (window.location.pathname === "/index.html" || "/folder.html") {
+    // Button Update (Play-Pause)
+    forAudio.addEventListener("ended", () => {
+      forPlayBtns.forEach((button) => {
         button.lastElementChild.classList.add("hidden");
         button.firstElementChild.classList.remove("hidden");
-      }
-    });
-  });
-
-  // Button Functionality (Previous)
-  forPrevBtns.forEach((button) => {
-    button.addEventListener("click", async () => {
-      if (!forAudio.src) return;
-      const index = titles.indexOf(file) - 1;
-      if (index >= 0) await audioInit(titles[index], audioPath);
-    });
-  });
-
-  // Button Functionality (Next)
-  forNextBtns.forEach((button) => {
-    button.addEventListener("click", async () => {
-      if (!forAudio.src) return;
-      const index = titles.indexOf(file) + 1;
-      if (index < titles.length) await audioInit(titles[index], audioPath);
-    });
-  });
-
-  // Button Functionality (Shuffle)
-  forShuBtns.forEach((button) => {
-    button.addEventListener("click", async () => {
-      if (!forAudio.src) return;
-      await audioInit(select(titles), audioPath);
-    });
-  });
-
-  // Button Functionality (Repeat)
-  forReptBtns.forEach((button) => {
-    button.dataset.repeat = "false"; // Default State
-
-    button.addEventListener("click", () => {
-      const isRepeating = button.dataset.repeat === "true";
-
-      if (isRepeating) {
-        button.dataset.repeat = "false";
-        forAudio.removeEventListener("ended", audioRepeat);
-        button.firstElementChild.setAttribute("color", "#ffffff"); // Inactive color
-      } else {
-        button.dataset.repeat = "true";
-        forAudio.addEventListener("ended", audioRepeat);
-        button.firstElementChild.setAttribute("color", "#ed254e"); // Active color
-      }
-    });
-
-    const audioRepeat = () => {
-      forAudio.play();
-      forPlayBtns.forEach((button) => {
-        button.firstElementChild.classList.add("hidden");
-        button.lastElementChild.classList.remove("hidden");
       });
-    };
-  });
-  // Button Functionality (Download)
-  forDownBtns.forEach((button) => {
-    button.addEventListener("click", () => {
-      if (!forAudio.src) return;
-      const link = document.createElement("a");
-      link.href = forAudio.src;
-      link.download = `Gabriel Music 320kbps - ${file}`;
-      link.click();
-    });
-  });
-
-  // Button Functionality (Sound)
-  forSound.forEach((button) => {
-    button.firstElementChild.addEventListener("click", () => {
-      button.firstElementChild.firstElementChild.classList.toggle("hidden");
-      button.firstElementChild.lastElementChild.classList.toggle("hidden");
-
-      if (forAudio.volume > 0) {
-        forAudio.volume = 0.0;
-        button.lastElementChild.firstElementChild.style.left = "0%";
-        button.lastElementChild.lastElementChild.style.width = "0%";
-      } else {
-        forAudio.volume = 1.0;
-        button.lastElementChild.firstElementChild.style.left = "100%";
-        button.lastElementChild.lastElementChild.style.width = "100%";
-      }
     });
 
-    // Sound Functionality
+    // Progress Functionality (Status)
+    forAudio.addEventListener("timeupdate", () => {
+      const percent = (forAudio.currentTime / forAudio.duration) * 100;
+      forProgBox.forEach((tag) => {
+        tag.firstElementChild.textContent = convert(forAudio.currentTime);
+        tag.lastElementChild.textContent = convert(forAudio.duration);
+      });
+
+      forProgress.forEach((tag) => {
+        tag.firstElementChild.style.left = percent + "%";
+        tag.lastElementChild.style.width = percent + "%";
+      });
+    });
+
+    // Progress Functionality (touch)
+    forProgress.forEach((tag) => {
+      tag.addEventListener("click", (event) => {
+        if (!forAudio.src) return; // Default
+
+        const range = event.currentTarget.getBoundingClientRect(); // Touch Position
+        const click = event.clientX - range.left;
+        const percent = Math.min(100, Math.max(0, (click / range.width) * 100)); // Ensure 0 - 100
+
+        forAudio.currentTime = (percent / 100) * forAudio.duration;
+
+        tag.firstElementChild.style.left = percent + "%";
+        tag.lastElementChild.style.width = percent + "%";
+      });
+    });
+
+    // Button Update (Play-Pause)
+    forPlayBtns.forEach((button) => {
+      button.addEventListener("click", () => {
+        if (!forAudio.src) return; // Default
+        else if (forAudio.paused) {
+          forAudio.play();
+          button.firstElementChild.classList.add("hidden");
+          button.lastElementChild.classList.remove("hidden");
+        } else {
+          forAudio.pause();
+          button.lastElementChild.classList.add("hidden");
+          button.firstElementChild.classList.remove("hidden");
+        }
+      });
+    });
+
+    // Button Update (Previous)
+    forPrevBtns.forEach((button) => {
+      button.addEventListener("click", async () => {
+        if (!forAudio.src) return; // Default
+
+        const index = titles.indexOf(file) - 1;
+        if (index >= 0) await audioInit(titles[index], audioPath);
+      });
+    });
+
+    // Button Update (Next)
+    forNextBtns.forEach((button) => {
+      button.addEventListener("click", async () => {
+        if (!forAudio.src) return; // Default
+
+        const index = titles.indexOf(file) + 1;
+        if (index < titles.length) await audioInit(titles[index], audioPath);
+      });
+    });
+
+    // Button Update (Shuffle)
+    forShuBtns.forEach((button) => {
+      button.addEventListener("click", async () => {
+        if (!forAudio.src) return; // Default
+
+        await audioInit(select(titles), audioPath);
+      });
+    });
+
+    // Button Update (Repeat)
+    forReptBtns.forEach((button) => {
+      button.dataset.repeat = "false"; // Default
+
+      button.addEventListener("click", () => {
+        if (!forAudio.src) return; // Default
+
+        const isRepeating = button.dataset.repeat === "true";
+
+        if (isRepeating) {
+          button.dataset.repeat = "false";
+          forAudio.removeEventListener("ended", audioRepeat);
+          button.firstElementChild.setAttribute("color", "#ffffff"); // Inactive
+        } else {
+          button.dataset.repeat = "true";
+          forAudio.addEventListener("ended", audioRepeat);
+          button.firstElementChild.setAttribute("color", "#ed254e"); // Active
+        }
+      });
+
+      const audioRepeat = () => {
+        forAudio.play();
+        forPlayBtns.forEach((button) => {
+          button.firstElementChild.classList.add("hidden");
+          button.lastElementChild.classList.remove("hidden");
+        });
+      };
+    });
+
+    // Button Update (Download)
+    forDownBtns.forEach((button) => {
+      button.addEventListener("click", () => {
+        if (!forAudio.src) return; // Default
+
+        const link = document.createElement("a");
+        link.href = forAudio.src;
+        link.download = `Gabriel Music 320kbps - ${file}`;
+        link.click();
+      });
+    });
+
+    // Button Update (Sound)
+    forSound.forEach((tag) => {
+      tag.firstElementChild.addEventListener("click", () => {
+        tag.firstElementChild.firstElementChild.classList.toggle("hidden");
+        tag.firstElementChild.lastElementChild.classList.toggle("hidden");
+
+        if (forAudio.volume > 0) {
+          forAudio.volume = 0;
+          tag.lastElementChild.firstElementChild.style.left = "0%";
+          tag.lastElementChild.lastElementChild.style.width = "0%";
+        } else {
+          forAudio.volume = 1;
+          tag.lastElementChild.firstElementChild.style.left = "100%";
+          tag.lastElementChild.lastElementChild.style.width = "100%";
+        }
+      });
+    });
+
+    // Sound Functionality (touch)
     forSound.forEach((tag) => {
       tag.lastElementChild.addEventListener("click", (event) => {
-        // Calculate Position
-        const range = event.currentTarget.getBoundingClientRect();
+        const range = event.currentTarget.getBoundingClientRect(); // Touch Position
         const click = event.clientX - range.left;
-        const percent = Math.min(100, Math.max(0, (click / range.width) * 100)); // Ensure 0 - 100 Range
+        const percent = Math.min(100, Math.max(0, (click / range.width) * 100)); // Ensure 0 - 100
 
         forAudio.volume = percent / 100;
+
         tag.lastElementChild.firstElementChild.style.left = percent + "%";
         tag.lastElementChild.lastElementChild.style.width = percent + "%";
 
@@ -288,7 +295,7 @@ try {
         }
       });
     });
-  });
+  }
 } catch (error) {
   console.log(error);
 }

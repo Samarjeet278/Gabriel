@@ -9,8 +9,8 @@ localStorage.setItem("data-path", dataPath);
 localStorage.setItem("audio-path", audioPath);
 localStorage.setItem("video-path", videoPath);
 
-const forArtist = document.querySelector("#round-box ul");
 const forSong = document.querySelector("#content-box ul");
+const forArtist = document.querySelector("#round-box ul");
 
 // Display Audio-File
 const fileShow = async () => {
@@ -18,7 +18,6 @@ const fileShow = async () => {
     const audios = await fetchAudio(audioPath); // Fetch Audio-File
     const titles = audios.map((audio) => decodeURI(audio.replace(".mp3", "")));
 
-    localStorage.removeItem("titles"); // Clear
     localStorage.setItem("titles", JSON.stringify(titles)); // Default
 
     const metadata = await Promise.all(
@@ -28,14 +27,14 @@ const fileShow = async () => {
     const frag = document.createDocumentFragment();
 
     metadata.slice(0, metadata.length / 2).forEach((data) => {
-      const temp = forSong.firstElementChild.cloneNode(true);
-      temp.firstElementChild.src = data.picture;
+      const temp = forSong.firstElementChild.cloneNode(true); // Cloning Enable
+      temp.children[0].src = data.picture;
       temp.children[1].textContent = data.title;
       frag.appendChild(temp);
     });
 
-    forSong.appendChild(frag);
-    forSong.firstElementChild.classList.add("hidden");
+    forSong.appendChild(frag); // Append Frag
+    forSong.firstElementChild.classList.add("hidden"); // Hide Temp
   } catch (error) {
     console.log(error);
   }
@@ -44,23 +43,23 @@ const fileShow = async () => {
 // Display Fol (Artist + Playlist)
 const folShow = async (file, template) => {
   try {
-    if (!file && !template) return;
-    const datafile = await fetchFile(dataPath + file); // Fetch Data
-    const keys = Object.keys(datafile); // Collect Keys
+    if (!file && !template) return; // Default
+    const fileData = await fetchFile(dataPath + file); // Fetch File-Data
+    const keys = Object.keys(fileData); // Collect Keys
 
     const frag = document.createDocumentFragment();
 
     keys.slice(0, 20).forEach((key) => {
-      const temp = template.firstElementChild.cloneNode(true);
-      temp.firstElementChild.src = datafile[key].picture;
+      const temp = forArtist.firstElementChild.cloneNode(true); // Cloning Enable
+      temp.children[0].src = fileData[key].picture;
       temp.children[1].textContent = key;
       frag.appendChild(temp);
     });
 
-    template.appendChild(frag);
-    template.firstElementChild.classList.add("hidden");
+    forArtist.appendChild(frag); // Append Frag
+    forArtist.firstElementChild.classList.add("hidden"); // Hide Temp
 
-    return datafile; // Return Datafile
+    return fileData; // Return File-Data
   } catch (error) {
     console.log(error);
   }
@@ -68,10 +67,9 @@ const folShow = async (file, template) => {
 
 async function main() {
   try {
-    const artists = await folShow("artists.json", forArtist); // Display Fol (Artist)
-    await fileShow(); // Display Audio-File
+    const artists = await folShow("artists.json", forArtist);
+    await fileShow();
 
-    // Play Audio-File (Click)
     forSong.addEventListener("click", async (event) => {
       const li = event.target.closest("li");
       if (li && li.children.length > 1) {
