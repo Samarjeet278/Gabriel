@@ -64,6 +64,8 @@ const forPrevBtns = document.querySelectorAll("[aria-label='previous']");
 const forDownBtns = document.querySelectorAll("[aria-label='download']");
 const forPlayBtns = document.querySelectorAll("[aria-label='play-pause']");
 
+const forSept = document.querySelector("#separator");
+
 // Audio-File Play
 export const audioInit = async (audio, path) => {
   try {
@@ -125,13 +127,19 @@ export const audioInit = async (audio, path) => {
       tag.lastElementChild.innerHTML = "";
       tag.lastElementChild.appendChild(frag); // Update Lyrics
     });
+
+    // Location (folder.html)
+    if (location.pathname === "/folder.html") {
+      forSept.firstElementChild.textContent = metadata.title;
+      forSept.lastElementChild.textContent = metadata.artist;
+    }
   } catch (error) {
     console.log(error);
   }
 };
 
 try {
-  if (window.location.pathname === "/index.html" || "/folder.html") {
+  if (location.pathname === "/index.html" || "/folder.html") {
     // Button Update (Play-Pause)
     forAudio.addEventListener("ended", () => {
       forPlayBtns.forEach((button) => {
