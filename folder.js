@@ -10,7 +10,9 @@ const folData = JSON.parse(localStorage.getItem("fol-data"));
 
 const folPic = document.querySelector("#fol-nav");
 const folDesc = document.querySelector("#fol-desc");
+const folBout = document.querySelector("#fol-about");
 const forSong = document.querySelector("#list-body");
+const forVid = document.querySelector("#vid-nav");
 
 const fileShow = async () => {
   try {
@@ -43,10 +45,17 @@ const fileShow = async () => {
 
     length = updateSec(length); // Convert
 
-    folPic.children[0].setAttribute("src", folData[fol].picture);
+    folPic.firstElementChild.setAttribute("src", folData[fol].picture);
+
     folDesc.children[0].textContent = status;
     folDesc.children[1].textContent = fol;
     folDesc.children[2].textContent = `Gabriel · ${count} Songs · About ${length}`;
+
+    forVid.firstElementChild.textContent = fol;
+
+    folBout.children[0].textContent = status;
+    folBout.children[1].textContent = `About ${fol}`;
+    folBout.children[2].textContent = folData[fol].description;
 
     forSong.appendChild(frag); // Append Frag
     forSong.firstElementChild.classList.add("hidden"); // Hide Temp
