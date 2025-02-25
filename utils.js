@@ -28,7 +28,7 @@ export const convert = (sec) => {
 };
 
 // Convert (Sec Into H-M-S)
-export const updateSec = () => {
+export const updateSec = (sec) => {
   try {
     if (isNaN(sec) || sec < 0) return "0";
     if (sec >= 3600) {
@@ -154,7 +154,7 @@ try {
       });
     });
 
-    // Progress Functionality (touch)
+    // Progress Functionality (Touch)
     forProgress.forEach((tag) => {
       tag.addEventListener("click", (event) => {
         if (!forAudio.src) return; // Default
@@ -274,7 +274,7 @@ try {
       });
     });
 
-    // Sound Functionality (touch)
+    // Sound Functionality (Touch)
     forSound.forEach((tag) => {
       tag.lastElementChild.addEventListener("click", (event) => {
         const range = event.currentTarget.getBoundingClientRect(); // Touch Position

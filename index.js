@@ -65,11 +65,34 @@ const folShow = async (file, template) => {
   }
 };
 
+// Redirect (folder.html)
+const folRed = (object, template, status) => {
+  try {
+    if (!object && !template && !status) return; // Default
+
+    template.addEventListener("click", (event) => {
+      const li = event.target.closest("li");
+      if (li && li.children.length > 1) {
+        const fol = li.children[1].textContent.trim();
+        if (!fol) return; // Default
+
+        localStorage.setItem("fol", fol);
+        localStorage.setItem("status", status);
+        localStorage.setItem("fol-data", JSON.stringify(object));
+        window.location.href = "/folder.html"; // Redirect
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 async function main() {
   try {
     const artists = await folShow("artists.json", forArtist);
     await fileShow();
 
+    // Play Audio-File (Touch)
     forSong.addEventListener("click", async (event) => {
       const li = event.target.closest("li");
       if (li && li.children.length > 1) {
@@ -77,6 +100,8 @@ async function main() {
         if (audio) await audioInit(audio, audioPath);
       }
     });
+
+    folRed(artists, forArtist, "Verified Artist"); // Redirect (Artist)
   } catch (error) {
     console.log(error);
   }
