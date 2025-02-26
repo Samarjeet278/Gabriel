@@ -69,7 +69,8 @@ const forPlayBtns = document.querySelectorAll("[aria-label='play-pause']");
 
 // Selectors Location (folder.html)
 const forSept = document.querySelector("#separator");
-const forQUl = document.querySelector("#queue-list");
+const forUpNxt = document.querySelector("#queue-list");
+const forPlyAll = document.querySelector("[aria-label='play-all']");
 
 // Audio-File Play
 export const audioInit = async (audio, path) => {
@@ -157,8 +158,8 @@ const upcoming = async (audio) => {
       audios.slice(index).map((audio) => metadatafile(audioPath + audio))
     ); // Fetch Metadata
 
-    const template = forQUl.firstElementChild.cloneNode(true); // Save Template
-    forQUl.replaceChildren(); // Delete Children
+    const template = forUpNxt.firstElementChild.cloneNode(true); // Save Template
+    forUpNxt.replaceChildren(); // Delete Children
 
     const frag = document.createDocumentFragment();
 
@@ -171,7 +172,7 @@ const upcoming = async (audio) => {
       frag.appendChild(temp);
     });
 
-    forQUl.appendChild(frag); // Append Frag
+    forUpNxt.appendChild(frag); // Append Frag
   } catch (error) {
     console.log(error);
   }
@@ -342,6 +343,41 @@ try {
         }
       });
     });
+
+    if (location.pathname === "/folder.html") {
+      let isPlaying = false; // Default
+
+      // Button Update (Play-All)
+      forPlyAll.addEventListener("click", async () => {
+        if (isPlaying) {
+          isPlaying = false; // Deactivate
+          forPlyAll.lastElementChild.classList.add("hidden");
+          forPlyAll.firstElementChild.classList.remove("hidden");
+          return;
+        } else {
+          isPlaying = true; // Activate
+          await fullPlay();
+          forPlyAll.firstElementChild.classList.add("hidden");
+          forPlyAll.lastElementChild.classList.remove("hidden");
+        }
+      });
+
+      // Play-All Functionality
+      const fullPlay = async (index = 0) => {
+        if (file) index = titles.indexOf(file) + 1; // Update
+        if (!isPlaying || index >= titles.length) {
+          isPlaying = false; // Deactivate
+          forPlyAll.lastElementChild.classList.add("hidden");
+          forPlyAll.firstElementChild.classList.remove("hidden");
+          return;
+        }
+
+        audioInit(titles[index], audioPath);
+        forAudio.onended = () => {
+          if (isPlaying) fullPlay(index + 1);
+        };
+      };
+    }
   }
 } catch (error) {
   console.log(error);
