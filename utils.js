@@ -45,12 +45,15 @@ export const updateSec = (sec) => {
   }
 };
 
-let file = null; // Default
+// Default Variable
+let file = null;
+const forAudio = new Audio();
 
-const forAudio = new Audio(); // Default
+// Get-Data (LocalStorage)
 const audioPath = localStorage.getItem("audio-path");
 const titles = JSON.parse(localStorage.getItem("titles"));
 
+// Default Selectors
 const forSound = document.querySelectorAll("#sound-box");
 const forInfoBox = document.querySelectorAll("#info-box");
 const forProgress = document.querySelectorAll("#progress");
@@ -64,7 +67,9 @@ const forPrevBtns = document.querySelectorAll("[aria-label='previous']");
 const forDownBtns = document.querySelectorAll("[aria-label='download']");
 const forPlayBtns = document.querySelectorAll("[aria-label='play-pause']");
 
+// Selectors Location (folder.html)
 const forSept = document.querySelector("#separator");
+const forQUl = document.querySelector("#queue-list");
 
 // Audio-File Play
 export const audioInit = async (audio, path) => {
@@ -132,7 +137,41 @@ export const audioInit = async (audio, path) => {
     if (location.pathname === "/folder.html") {
       forSept.firstElementChild.textContent = metadata.title;
       forSept.lastElementChild.textContent = metadata.artist;
+
+      await upcoming(audio); // Show Upcoming
     }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// Upcoming Functionality
+const upcoming = async (audio) => {
+  try {
+    const audios = titles.map((title) => `${title}.mp3`);
+    const index = titles.indexOf(audio) + 1;
+
+    if (index >= titles.length) return; // Default
+
+    const filedata = await Promise.all(
+      audios.slice(index).map((audio) => metadatafile(audioPath + audio))
+    ); // Fetch Metadata
+
+    const template = forQUl.firstElementChild.cloneNode(true); // Save Template
+    forQUl.replaceChildren(); // Delete Children
+
+    const frag = document.createDocumentFragment();
+
+    filedata.forEach((data) => {
+      const temp = template.cloneNode(true); // Cloning Enable
+      temp.classList.remove("hidden");
+      temp.children[0].src = data.picture;
+      temp.children[1].children[0].textContent = data.title;
+      temp.children[1].children[1].textContent = data.artist;
+      frag.appendChild(temp);
+    });
+
+    forQUl.appendChild(frag); // Append Frag
   } catch (error) {
     console.log(error);
   }

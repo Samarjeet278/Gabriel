@@ -1,18 +1,21 @@
 import { fetchAudio, fetchFile, metadatafile } from "./server.js";
 import { audioInit } from "./utils.js";
 
+// Default Variables
 const dataPath = "/database/data/";
 const audioPath = "/database/audio/";
 const videoPath = "/database/video/";
 
+// Set-Data (LocalStorage)
 localStorage.setItem("data-path", dataPath);
 localStorage.setItem("audio-path", audioPath);
 localStorage.setItem("video-path", videoPath);
 
+// Default Selectors
 const forSong = document.querySelector("#content-box ul");
 const forArtist = document.querySelector("#round-box ul");
 
-// Display Audio-File
+// Audio-File Display (Main)
 const fileShow = async () => {
   try {
     const audios = await fetchAudio(audioPath); // Fetch Audio-File
@@ -40,18 +43,18 @@ const fileShow = async () => {
   }
 };
 
-// Display Fol (Artist + Playlist)
+// Fol Display (Artist + Playlist)
 const folShow = async (file, template) => {
   try {
     if (!file && !template) return; // Default
-    const fileData = await fetchFile(dataPath + file); // Fetch File-Data
-    const keys = Object.keys(fileData); // Collect Keys
+    const filedata = await fetchFile(dataPath + file); // Fetch File-Data
+    const keys = Object.keys(filedata); // Collect Keys
 
     const frag = document.createDocumentFragment();
 
     keys.slice(0, 20).forEach((key) => {
       const temp = forArtist.firstElementChild.cloneNode(true); // Cloning Enable
-      temp.children[0].src = fileData[key].picture;
+      temp.children[0].src = filedata[key].picture;
       temp.children[1].textContent = key;
       frag.appendChild(temp);
     });
@@ -59,7 +62,7 @@ const folShow = async (file, template) => {
     forArtist.appendChild(frag); // Append Frag
     forArtist.firstElementChild.classList.add("hidden"); // Hide Temp
 
-    return fileData; // Return File-Data
+    return filedata; // Return File-Data
   } catch (error) {
     console.log(error);
   }
@@ -92,7 +95,7 @@ async function main() {
     const artists = await folShow("artists.json", forArtist);
     await fileShow();
 
-    // Play Audio-File (Touch)
+    // Touch Audio-File Play
     forSong.addEventListener("click", async (event) => {
       const li = event.target.closest("li");
       if (li && li.children.length > 1) {
@@ -101,7 +104,7 @@ async function main() {
       }
     });
 
-    folRed(artists, forArtist, "Verified Artist"); // Redirect (Artist)
+    folRed(artists, forArtist, "Verified Artist"); // Expand Fol
   } catch (error) {
     console.log(error);
   }

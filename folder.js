@@ -1,6 +1,7 @@
 import { metadatafile } from "./server.js";
 import { audioInit, convert, updateSec } from "./utils.js";
 
+// Get-Data (LocalStorage)
 const fol = localStorage.getItem("fol");
 const status = localStorage.getItem("status");
 const dataPath = localStorage.getItem("data-path");
@@ -8,12 +9,15 @@ const audioPath = localStorage.getItem("audio-path");
 const videoPath = localStorage.getItem("video-path");
 const folData = JSON.parse(localStorage.getItem("fol-data"));
 
+// Default Selectors
+const forVid = document.querySelector("#vid-nav");
 const folPic = document.querySelector("#fol-nav");
 const folDesc = document.querySelector("#fol-desc");
 const folBout = document.querySelector("#fol-about");
 const forSong = document.querySelector("#list-body");
-const forVid = document.querySelector("#vid-nav");
+const forQUl = document.querySelector("#queue-list");
 
+// Display Audio-File (Fol)
 const fileShow = async () => {
   try {
     const titles = Object.values(folData[fol].songs);
@@ -68,11 +72,20 @@ async function main() {
   try {
     await fileShow();
 
-    // Play Audio-File (Touch)
+    // Touch Audio-File Play (Fol)
     forSong.addEventListener("click", async (event) => {
       const li = event.target.closest("li");
       if (li && li.children.length > 1) {
         const audio = li.children[2].textContent.trim();
+        if (audio) await audioInit(audio, audioPath);
+      }
+    });
+
+    // Touch Audio-File Play (Queue)
+    forQUl.addEventListener("click", async (event) => {
+      const li = event.target.closest("li");
+      if (li && li.children.length > 1) {
+        const audio = li.children[1].children[0].textContent.trim();
         if (audio) await audioInit(audio, audioPath);
       }
     });
